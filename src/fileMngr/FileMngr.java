@@ -39,7 +39,22 @@ public class FileMngr {
 	        dialog.setVisible(true);
 	 }
 	 
+	 public static String readFile(File file) throws IOException {
+	        StringBuilder sb = new StringBuilder();
+	        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+	            String line;
+	            while ((line = br.readLine()) != null) {
+	                sb.append(line).append(System.lineSeparator());
+	            }
+	        }
+	        return sb.toString();
+	    }
 	 
+	 public static void writeFile(File file, String content) throws IOException {
+	        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+	            bw.write(content);
+	        }
+	    }
 	 
 	 
 	 public static void fl_createPrj(JFrame frame) {
@@ -83,6 +98,8 @@ public class FileMngr {
 	        }
 	 }
 	 
+	 
+	 
 	 private static void fl_openFile(JFrame frame, JDialog di) {
 		 data = getPath.getText();
 		 StringBuilder content = new StringBuilder();
@@ -120,6 +137,6 @@ public class FileMngr {
 			
 			//p.add(code, BorderLayout.CENTER);
 			frame.add(scrollPane, BorderLayout.CENTER);
-			System.out.print("HIEL VLAD");
+			System.out.print("HI ONION");
  }
 }
