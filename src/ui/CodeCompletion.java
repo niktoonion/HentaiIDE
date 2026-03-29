@@ -1,3 +1,4 @@
+// --- src/ui/CodeCompletion.java ---
 package ui;
 
 import java.awt.*;
@@ -9,20 +10,61 @@ import javax.swing.text.*;
 
 /**
  * Простейшее автодополнение (Ctrl + Space).
- * Использует modelToView(int) – совместимо со всеми версиями JDK.
+ * Подбирает подсказки из:
+ *   – зафиксированных наборов ключевых слов по текущему языку;
+ *   – всех идентификаторов, найденных в текущем документе.
  */
 public final class CodeCompletion {
 
-    private static final String[] KEYWORDS = {
-            "if","else","while","for","return","new","class","static",
-            "public","private","protected","void","int","bool","string",
-            "true","false","i","b","s"
-    };
+    /** Языковые наборы ключевых слов. */
+    private static final Map<Language, String[]> KEYWORDS_MAP = new EnumMap<>(Language.class);
+    static {
+        // C++
+        KEYWORDS_MAP.put(Language.CPP, new String[]{
+                "int","float","double","char","bool","if","else","for","while","do",
+                "switch","case","break","continue","return","class","struct","public",
+                "private","protected","static","constexpr","namespace","using",
+                "template","typename","new","delete","try","catch","throw",
+                "std","cout","cin","cerr","getline","vector","string","map","set"
+        });
+        // Java
+        KEYWORDS_MAP.put(Language.JAVA, new String[]{
+                "int","long","float","double","char","boolean","String","if","else","for",
+                "while","do","switch","case","break","continue","return","class",
+                "interface","public","private","protected","static","final","abstract",
+                "synchronized","volatile","transient","new","try","catch","throw",
+                "System","System.out","System.err","ArrayList","List","Map","HashMap",
+                "Set","HashSet","Collections"
+        });
+        // Lua
+        KEYWORDS_MAP.put(Language.LUA, new String[]{
+                "function","local","end","if","then","else","elseif","for","in","while",
+                "repeat","until","return","true","false","nil","and","or","not","pairs",
+                "ipairs","require","module"
+        });
+        // Python
+        KEYWORDS_MAP.put(Language.PYTHON, new String[]{
+                "def","class","import","from","as","if","elif","else","while","for","in",
+                "break","continue","return","True","False","None","and","or","not","lambda",
+                "with","yield","try","except","finally","raise","print","len","range",
+                "list","dict","set","tuple","str","int","float","bool","open","enumerate"
+        });
+        // RMS (оставляем старый набор, чтобы не ломать уже существующий функционал)
+        KEYWORDS_MAP.put(Language.RMS, new String[]{
+                "if","else","while","for","int","bool","string","i","b","s"
+        });
+        // UNKNOWN – пустой массив
+        KEYWORDS_MAP.put(Language.UNKNOWN, new String[]{});
+    }
 
+    /** Открывает всплывающее окно автодополнения над caret'ом. */
     public static void showCompletion(JTextComponent comp) {
+        Language lang = (Language) comp.getClientProperty("language");
+        if (lang == null) lang = Language.UNKNOWN;
+
         try {
             int caretPos = comp.getCaretPosition();
-            Document doc   = comp.getDocument();
+            Document doc = comp.getDocument();
 
             // ---------- 1) Префикс ----------
             int start = caretPos - 1;
@@ -37,9 +79,12 @@ public final class CodeCompletion {
 
             // ---------- 2) Сбор вариантов ----------
             Set<String> candidates = new LinkedHashSet<>();
-            for (String kw : KEYWORDS)
-                if (kw.startsWith(prefix)) candidates.add(kw);
 
+            // 2а) Ключевые слова выбранного языка
+            String[] kw = KEYWORDS_MAP.getOrDefault(lang, new String[]{});
+            for (String k : kw) if (k.startsWith(prefix)) candidates.add(k);
+
+            // 2б) Идентификаторы из текущего текста
             String full = doc.getText(0, doc.getLength());
             Matcher m = Pattern.compile("\\b([a-zA-Z_][a-zA-Z0-9_]*)\\b")
                                .matcher(full);

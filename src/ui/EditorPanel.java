@@ -1,3 +1,4 @@
+// --- src/ui/EditorPanel.java ---
 package ui;
 
 import java.awt.*;
@@ -12,10 +13,9 @@ import javax.swing.undo.*;
  * Панель‑редактор.
  *
  * • Word‑wrap включён по умолчанию.
- * • Улучшенный Undo/Redo (группировка быстрых правок, подписи в меню).
- * • Автодополнение – клавиша **Ctrl + Space** открывает {@link CodeCompletion}.
- * • Подсветка RMS (RmsSyntaxHighlighter) включается автоматически,
- *   если файл имеет расширение *.rms*.
+ * • Undo/Redo с «умной» группировкой.
+ * • Автодополнение – Ctrl + Space → {@link CodeCompletion}.
+ * • Подсветка синтаксиса подключается автоматически в зависимости от типа файла.
  */
 public class EditorPanel extends JPanel {
 
@@ -29,7 +29,7 @@ public class EditorPanel extends JPanel {
     private final Timer compoundTimer;
     private static final int COMPOUND_TIMEOUT = 500; // мс
 
-    private boolean rmsMode = false;          // включена ли подсветка RMS
+    private Language language = Language.UNKNOWN; // текущий язык
 
     /** Пустой конструктор – создаёт «Без названия». */
     public EditorPanel() {
@@ -47,9 +47,10 @@ public class EditorPanel extends JPanel {
         textPane.setForeground(Color.GREEN);
         textPane.setCaretColor(Color.WHITE);
         textPane.setSelectionColor(new Color(0x444444));
-        textPane.setWordWrap(true);            // **Перенос строк включён по‑умолчанию**
+        textPane.setWordWrap(true);            // перенос строк включён по‑умолчанию
+        textPane.putClientProperty("language", language); // будет переопределено в setFile()
 
-        /* ---------- Undo/Redo + compound‑edit ---------- */
+        /* ----- Undo/Redo + compound‑edit ----- */
         compoundTimer = new Timer(COMPOUND_TIMEOUT, e -> closeCompoundEdit());
         compoundTimer.setRepeats(false);
 
@@ -63,16 +64,16 @@ public class EditorPanel extends JPanel {
         });
 
         installUndoRedoKeyBindings();          // Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z
-        installCodeCompletionKeyBinding();      // **Ctrl+Space → автодополнение**
+        installCodeCompletionKeyBinding();    // Ctrl+Space → автодополнение
 
-        /* ---------- Модификация (for title «*» и т.п.) ---------- */
+        /* ----- Модификация (для знака «*» в заголовке) ----- */
         textPane.getDocument().addDocumentListener(new DocumentListener() {
             @Override public void insertUpdate(DocumentEvent e) { setModified(true); firePropertyChange("undoRedo", null, null); }
             @Override public void removeUpdate(DocumentEvent e) { setModified(true); firePropertyChange("undoRedo", null, null); }
             @Override public void changedUpdate(DocumentEvent e) { setModified(true); firePropertyChange("undoRedo", null, null); }
         });
 
-        /* ---------- Прокрутка + линейка строк ---------- */
+        /* ----- Прокрутка + линейка строк ----- */
         JScrollPane scroll = new JScrollPane(textPane);
         scroll.setRowHeaderView(new LineNumberComponent(textPane));
         add(scroll, BorderLayout.CENTER);
@@ -80,12 +81,12 @@ public class EditorPanel extends JPanel {
         // Очистка истории undo при открытии нового файла
         undoManager.discardAllEdits();
 
-        setFile(file);
+        setFile(file); // определит язык и подключит подсветку
     }
 
-    /* --------------------------------------------------------------
-     *  Compound‑edit helpers
-     * -------------------------------------------------------------- */
+    // --------------------------------------------------------------
+    //  Compound‑edit helpers
+    // --------------------------------------------------------------
     private void closeCompoundEdit() {
         if (curCompound != null && curCompound.isInProgress()) {
             curCompound.end();
@@ -93,11 +94,11 @@ public class EditorPanel extends JPanel {
         }
     }
 
-    /* --------------------------------------------------------------
-     *  Undo/Redo key bindings (Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z)
-     * -------------------------------------------------------------- */
+    // --------------------------------------------------------------
+    //  Undo/Redo key bindings
+    // --------------------------------------------------------------
     private void installUndoRedoKeyBindings() {
-        // ---- Undo (Ctrl+Z) ----
+        // Undo (Ctrl+Z)
         KeyStroke ksUndo = KeyStroke.getKeyStroke(KeyEvent.VK_Z,
                 InputEvent.CTRL_DOWN_MASK);
         textPane.getInputMap(JComponent.WHEN_FOCUSED).put(ksUndo, "undo");
@@ -108,7 +109,7 @@ public class EditorPanel extends JPanel {
             }
         });
 
-        // ---- Redo (Ctrl+Y) ----
+        // Redo (Ctrl+Y)
         KeyStroke ksRedo = KeyStroke.getKeyStroke(KeyEvent.VK_Y,
                 InputEvent.CTRL_DOWN_MASK);
         textPane.getInputMap(JComponent.WHEN_FOCUSED).put(ksRedo, "redo");
@@ -119,7 +120,7 @@ public class EditorPanel extends JPanel {
             }
         });
 
-        // ---- Redo (Ctrl+Shift+Z) ----
+        // Redo (Ctrl+Shift+Z)
         KeyStroke ksRedoShift = KeyStroke.getKeyStroke(KeyEvent.VK_Z,
                 InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK);
         textPane.getInputMap(JComponent.WHEN_FOCUSED).put(ksRedoShift, "redoShift");
@@ -131,9 +132,9 @@ public class EditorPanel extends JPanel {
         });
     }
 
-    /* --------------------------------------------------------------
-     *  **Ctrl+Space → автодополнение**
-     * -------------------------------------------------------------- */
+    // --------------------------------------------------------------
+    //  Ctrl+Space → автодополнение
+    // --------------------------------------------------------------
     private void installCodeCompletionKeyBinding() {
         KeyStroke ks = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE,
                 InputEvent.CTRL_DOWN_MASK);
@@ -149,22 +150,27 @@ public class EditorPanel extends JPanel {
     //  Свойства
     // -----------------------------------------------------------------
     public JTextComponent getTextArea() { return textPane; }
+    public String getText()           { return textPane.getText(); }
+    public File getFile()             { return file; }
 
-    public String getText() { return textPane.getText(); }
-
-    public File getFile() { return file; }
-
+    /** Устанавливаем файл и автоматически определяем язык. */
     public void setFile(File f) {
         this.file = f;
         firePropertyChange("title", null,
                 (f != null) ? f.getName() : "Без названия");
-        if (f != null && f.getName().toLowerCase().endsWith(".rms")) {
-            enableRmsHighlighting();
-        }
+
+        // определяем язык
+        language = (f != null) ? Language.detect(f.getName())
+                               : Language.UNKNOWN;
+
+        // сохраняем язык в client‑property – используется автодополнением
+        textPane.putClientProperty("language", language);
+
+        // включаем подсветку под нужный язык
+        SyntaxHighlighterFactory.install(textPane, language);
     }
 
     public boolean isModified() { return modified; }
-
     public void setModified(boolean m) {
         boolean old = this.modified;
         this.modified = m;
@@ -187,26 +193,15 @@ public class EditorPanel extends JPanel {
         if (undoManager.canRedo()) undoManager.redo();
     }
 
-    /** Текст подписи для пункта меню «Отменить». */
     public String getUndoPresentationName() {
         if (undoManager.canUndo())
             return undoManager.getUndoPresentationName();
         return "Отменить";
     }
 
-    /** Текст подписи для пункта меню «Повторить». */
     public String getRedoPresentationName() {
         if (undoManager.canRedo())
             return undoManager.getRedoPresentationName();
         return "Повторить";
-    }
-
-    // -----------------------------------------------------------------
-    //  Подсветка RMS
-    // -----------------------------------------------------------------
-    private void enableRmsHighlighting() {
-        if (rmsMode) return;
-        rmsMode = true;
-        RmsSyntaxHighlighter.install(textPane);
     }
 }
