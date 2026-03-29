@@ -9,10 +9,10 @@ import javax.swing.text.*;
 public final class PythonSyntaxHighlighter {
 
     private static final String[] KEYWORDS = {
-            "False","await","else","import","pass","None","break","except","in","raise",
-            "True","class","finally","is","return","and","continue","for","lambda","try",
-            "as","def","from","nonlocal","while","assert","del","global","not","with",
-            "async","elif","if","or","yield"
+        "False","await","else","import","pass","None","break","except","in","raise",
+        "True","class","finally","is","return","and","continue","for","lambda","try",
+        "as","def","from","nonlocal","while","assert","del","global","not","with",
+        "async","elif","if","or","yield"
     };
     private static final Pattern PATTERN_KEYWORD = Pattern.compile(
             "\\b(?:" + String.join("|", KEYWORDS) + ")\\b");
@@ -59,11 +59,11 @@ public final class PythonSyntaxHighlighter {
             catch (BadLocationException ex) { return; }
 
             doc.setCharacterAttributes(0, text.length(), ATTR_DEFAULT, true);
-            apply(PATTERN_COMMENT,  doc, text, ATTR_COMMENT);
-            apply(PATTERN_STRING,   doc, text, ATTR_STRING);
-            apply(PATTERN_NUMBER,   doc, text, ATTR_NUMBER);
-            apply(PATTERN_KEYWORD,  doc, text, ATTR_KEYWORD);
-            apply(PATTERN_OPERATOR, doc, text, ATTR_OPERATOR);
+            apply(PATTERN_COMMENT,   doc, text, ATTR_COMMENT);
+            apply(PATTERN_STRING,    doc, text, ATTR_STRING);
+            apply(PATTERN_NUMBER,    doc, text, ATTR_NUMBER);
+            apply(PATTERN_KEYWORD,   doc, text, ATTR_KEYWORD);
+            apply(PATTERN_OPERATOR,  doc, text, ATTR_OPERATOR);
         });
     }
 

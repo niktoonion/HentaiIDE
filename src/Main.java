@@ -4,6 +4,7 @@ import fileMngr.FileMngr;
 import ui.EditorPanel;
 import extra.FindReplaceDialog;
 import ui.CodeCompletion;
+import ui.GoToLineDialog;                 // <-- новый импорт
 
 import javax.swing.*;
 import javax.swing.text.*;
@@ -13,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-
 /**
  * Главный класс IDE.
  * Включает:
@@ -138,6 +138,11 @@ public class Main extends JFrame {
         menuBar.add(helpMenu);
 
         setJMenuBar(menuBar);
+        
+        wrapItem.addActionListener(e -> {
+            wordWrapEnabled = wrapItem.isSelected();
+            setWordWrapForAll(wordWrapEnabled);
+        });
 
         // ---------- Статус‑бар ----------
         JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -225,7 +230,12 @@ public class Main extends JFrame {
         updateUndoRedoMenuItems();
         statusLabel.setText("Создан новый файл");
     }
-
+    
+    private void goToLine() {
+        EditorPanel ep = getCurrentEditor();
+        if (ep != null) new GoToLineDialog(this, ep).setVisible(true);
+    }
+    
     private void openFile() {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Открыть файл");

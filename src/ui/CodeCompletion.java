@@ -1,4 +1,3 @@
-// --- src/ui/CodeCompletion.java ---
 package ui;
 
 import java.awt.*;
@@ -7,6 +6,7 @@ import java.util.*;
 import java.util.regex.*;
 import javax.swing.*;
 import javax.swing.text.*;
+import ui.Language;
 
 /**
  * Простейшее автодополнение (Ctrl + Space).
@@ -57,7 +57,6 @@ public final class CodeCompletion {
         KEYWORDS_MAP.put(Language.UNKNOWN, new String[]{});
     }
 
-    /** Открывает всплывающее окно автодополнения над caret'ом. */
     public static void showCompletion(JTextComponent comp) {
         Language lang = (Language) comp.getClientProperty("language");
         if (lang == null) lang = Language.UNKNOWN;

@@ -8,13 +8,21 @@ import java.awt.*;
 
 /**
  * Отображает номера строк слева от любого {@link JTextComponent}
- * (JTextArea, JTextPane, …). Теперь работает с {@link WrapableTextPane}.
+ * (JTextArea, JTextPane, …).  Теперь номера выравниваются
+ * по фактической позиции каждой строки, а не по фиксированной
+ * высоте строк.
+ *
+ * <p>Для корректного отображения требуется, чтобы в {@link JTextComponent}
+ * использовался один‑единственный шрифт (как в нашем редакторе) – тогда
+ * высота строки одинакова для всех строк.  Если в документе будет
+ * использовано несколько размеров шрифта, номера будут привязаны к
+ * первой (самой верхней) части каждой логической строки.</p>
  */
-public class LineNumberComponent extends JComponent {
+public final class LineNumberComponent extends JComponent {
 
     private static final long serialVersionUID = 1L;
-    private static final int MARGIN = 5;
-    private final JTextComponent textComp;
+    private static final int MARGIN = 5;               // отступ справа от номера
+    private final JTextComponent textComp;             // редактор, к которому привязаны номера
     private final Font font = new Font("Consolas", Font.PLAIN, 12);
     private final Color bg = new Color(0x2B2B2B);
     private final Color fg = new Color(0xBBBBBB);
@@ -22,44 +30,73 @@ public class LineNumberComponent extends JComponent {
     public LineNumberComponent(JTextComponent comp) {
         this.textComp = comp;
 
-        // Любое изменение текста → перерисовка
+        // любое изменение текста требует перерисовки номеров
         comp.getDocument().addDocumentListener(new DocumentListener() {
             @Override public void insertUpdate(DocumentEvent e) { repaint(); }
             @Override public void removeUpdate(DocumentEvent e) { repaint(); }
             @Override public void changedUpdate(DocumentEvent e) { repaint(); }
         });
+        // изменение позиции каретки тоже заставляет пере‑рисовать
         comp.addCaretListener(e -> repaint());
 
+        // желательно задать минимальную ширину (30 px), но реальная ширина будет
+        // автоматически увеличиваться, если потребуется больше места для цифр
         setPreferredSize(new Dimension(30, Integer.MAX_VALUE));
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        // фон (чёрный)
         g.setColor(bg);
         g.fillRect(0, 0, getWidth(), getHeight());
 
+        // шрифт и метрики
         g.setFont(font);
         FontMetrics fm = g.getFontMetrics();
-        int lineHeight = fm.getHeight();
 
-        // Вычисляем количество строк через корневой элемент документа
-        int lineCount = 0;
         Document doc = textComp.getDocument();
-        if (doc != null) {
-            Element root = doc.getDefaultRootElement();
-            lineCount = root.getElementCount();
+        if (doc == null) return;
+
+        // корневой элемент – строковый (по символу '\n')
+        Element root = doc.getDefaultRootElement();
+        int lineCount = root.getElementCount();
+
+        // Если документ заканчивается переводом строки, последняя логическая
+        // строка будет пустой – её обычно не показывают в нумерации.
+        // Стандартный `DefaultStyledDocument` считает её отдельной,
+        // поэтому просто игнорируем её, когда она пустая.
+        if (lineCount > 0) {
+            try {
+                Element last = root.getElement(lineCount - 1);
+                if (last.getEndOffset() == doc.getLength() + 1 &&
+                    last.getStartOffset() == last.getEndOffset() - 1) {
+                    lineCount--;                // убираем «пустую» последнюю строку
+                }
+            } catch (Exception ignore) {}
         }
 
-        int y = fm.getAscent() + 2;
-        for (int i = 1; i <= lineCount; i++) {
-            String num = Integer.toString(i);
-            int strWidth = fm.stringWidth(num);
-            int x = getWidth() - strWidth - MARGIN;
+        // Для каждой строки получаем её визуальную позицию
+        for (int i = 0; i < lineCount; i++) {
+            try {
+                // Смещение начала строки в модели
+                int startOffset = root.getElement(i).getStartOffset();
 
-            g.setColor(fg);
-            g.drawString(num, x, y);
-            y += lineHeight;
+                // Преобразуем в координаты вьюпорта
+                Rectangle r = textComp.modelToView(startOffset);
+                if (r == null) continue;          // может случиться в редких случаях
+
+                // Формируем строку‑номер (нумерация с 1)
+                String lineNum = Integer.toString(i + 1);
+                int strWidth = fm.stringWidth(lineNum);
+                int x = getWidth() - strWidth - MARGIN;
+                int y = r.y + fm.getAscent();      // позиция базовой линии текста
+
+                g.setColor(fg);
+                g.drawString(lineNum, x, y);
+            } catch (BadLocationException ex) {
+                // Если позиция уже недоступна – просто пропускаем
+            }
         }
     }
 }

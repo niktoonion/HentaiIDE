@@ -4,8 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Перечисление всех языков, которые умеет подсвечивать IDE.
- * Язык определяется по расширению имени файла.
+ * Язык файла – определяется по расширению.
  */
 public enum Language {
     CPP("cpp","c","h","hpp"),
@@ -13,7 +12,7 @@ public enum Language {
     LUA("lua"),
     PYTHON("py"),
     RMS("rms"),
-    UNKNOWN;               // «неизвестный» – без подсветки
+    UNKNOWN;                 // без подсветки
 
     private final Set<String> extensions = new HashSet<>();
 

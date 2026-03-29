@@ -9,8 +9,8 @@ import javax.swing.text.*;
 public final class LuaSyntaxHighlighter {
 
     private static final String[] KEYWORDS = {
-            "and","break","do","else","elseif","end","false","for","function","if","in","local",
-            "nil","not","or","repeat","return","then","true","until","while"
+        "and","break","do","else","elseif","end","false","for","function","if","in","local",
+        "nil","not","or","repeat","return","true","until","while"
     };
     private static final Pattern PATTERN_KEYWORD = Pattern.compile(
             "\\b(?:" + String.join("|", KEYWORDS) + ")\\b");
@@ -25,7 +25,7 @@ public final class LuaSyntaxHighlighter {
             "--\\[\\[(?:.|\\R)*?\\]\\]|--[^\\n]*", Pattern.DOTALL);
 
     private static final Pattern PATTERN_OPERATOR = Pattern.compile(
-            "[=+\\-*/%<>!~^]=?|&&?|\\|\\|?|\\.\\.\\.|::|\\.|,|;|\\(|\\)|\\[|\\]|\\{|\\}");
+            "[=+\\-*/%<>!~^]=?|&&?|\\|\\|?|\\?\\:|::|\\.|,|;|\\(|\\)|\\[|\\]|\\{|\\}");
 
     private static final AttributeSet ATTR_DEFAULT  = style(Color.GREEN, false);
     private static final AttributeSet ATTR_KEYWORD  = style(new Color(0x569CD6), true);
