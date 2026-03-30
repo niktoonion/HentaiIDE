@@ -2,12 +2,35 @@
 
 ![werfia-pony-town](https://github.com/user-attachments/assets/8eeb5711-d6aa-435b-8e04-7dc8504e9112)
 
-<h2>**Hentai IDE - редактор кода для настоящих мужиков!**</h2>
-<img width="2559" height="1439" alt="image" src="https://github.com/user-attachments/assets/0322f128-da82-41ec-bb6a-2047a729b27b" />
+# Hentai IDE – редактор кода для настоящих мужиков!
 
-Он поддерживает синтаксис <b>C++, Lua, Java и Python</b>!
-Написан мной на java 8, и чтобы скачать перейдите <a href="https://github.com/niktoonion/HentaiIDE/releases/tag/alpha">сюда</a>.
+<details open>
+<summary>🇷🇺 Русский</summary>
 
+## **Hentai IDE – редактор кода для настоящих мужиков!**
+
+<img src="https://github.com/user-attachments/assets/0322f128-da82-41ec-bb6a-2047a729b27b"
+     alt="Скриншот Hentai IDE"
+     width="2559" height="1439">
+
+Он поддерживает синтаксис **C++, Lua, Java и Python**!  
+Написан мной на **Java 8**, и, чтобы скачать, перейдите **[сюда](https://github.com/niktoonion/HentaiIDE/releases/tag/alpha)**.
+
+</details>
+
+<details>
+<summary>🇬🇧 English</summary>
+
+## **Hentai IDE – a code editor for real men!**
+
+<img src="https://github.com/user-attachments/assets/0322f128-da82-41ec-bb6a-2047a729b27b"
+     alt="Hentai IDE screenshot"
+     width="2559" height="1439">
+
+It supports the syntax of **C++, Lua, Java and Python**!  
+Written by me in **Java 8**, and to download it go **[here](https://github.com/niktoonion/HentaiIDE/releases/tag/alpha)**.
+
+</details>
 <br>
 <br>
 
