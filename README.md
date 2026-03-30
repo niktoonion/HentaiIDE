@@ -8,6 +8,9 @@
 Он поддерживает синтаксис <b>C++, Lua, Java и Python</b>!
 Написан мной на java 8, и чтобы скачать перейдите <a href="https://github.com/niktoonion/HentaiIDE/releases/tag/alpha">сюда</a>.
 
+<br>
+<br>
+
 ## Социальные сети
 
 <!-- Указываем желаемый размер через атрибут width (можно также задать height) -->
