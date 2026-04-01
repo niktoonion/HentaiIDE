@@ -1,10 +1,31 @@
+/*
+ * Copyright (C) 2026 Федотов Владислав Игоревич (niktoonion)
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later   // ← для машинного анализа (необязательно)
+ */
+
+
 import extra.Extra;
 import extra.RecentFilesManager;
 import fileMngr.FileMngr;
 import ui.EditorPanel;
 import extra.FindReplaceDialog;
 import ui.CodeCompletion;
-import ui.GoToLineDialog;                 // <-- новый импорт
+import ui.GoToLineDialog;
+import ui.ShortcutHelpDialog;
 
 import javax.swing.*;
 import javax.swing.text.*;
@@ -12,8 +33,10 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+
 /**
  * Главный класс IDE.
  * Включает:
@@ -21,9 +44,12 @@ import java.util.concurrent.ExecutionException;
  *   – автоматическое обновление их состояния,
  *   – word‑wrap включён по‑умолчанию,
  *   – автодополнение (Ctrl + Space),
- *   – меню «Недавние».
+ *   – меню «Недавние»,
+ *   – панель‑инструментов (toolbar) со всеми часто‑используемыми функциями,
+ *   – диалог «Список горячих клавиш».
  */
 public class Main extends JFrame {
+	
 
     private final JTabbedPane tabbedPane = new JTabbedPane();
     private final JLabel statusLabel = new JLabel("Готов");
@@ -40,6 +66,14 @@ public class Main extends JFrame {
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         setSize(Extra.sc_getWidth() * 3 / 4, Extra.sc_getHeight() * 3 / 4);
         setLocationRelativeTo(null);
+        
+        URL iconURL = getClass().getResource("icon.jpg");   // <-- ваш путь
+        if (iconURL != null) {
+            Image icon = Toolkit.getDefaultToolkit().getImage(iconURL);
+            setIconImage(icon);   // <-- задаём иконку Frame'а
+        } else {
+            System.err.println("Иконка /icon.jpg не найдена в classpath!");
+        }
         initUI();
         initListeners();
     }
@@ -129,20 +163,30 @@ public class Main extends JFrame {
         JCheckBoxMenuItem wrapItem = new JCheckBoxMenuItem("Перенос строк");
         wrapItem.setSelected(wordWrapEnabled);
         viewMenu.add(wrapItem);
+
+        // Перейти к строке (Ctrl+G)
+        JMenuItem goToLineItem = new JMenuItem("Перейти к строке…");
+        goToLineItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G,
+                InputEvent.CTRL_DOWN_MASK));
+        viewMenu.add(goToLineItem);
+        goToLineItem.addActionListener(e -> goToLine());
+
         menuBar.add(viewMenu);
 
         // ==== Справка ====
         JMenu helpMenu = new JMenu("Справка");
+        JMenuItem shortcutsItem = new JMenuItem("Список горячих клавиш…");
+        shortcutsItem.addActionListener(e ->
+                new ShortcutHelpDialog(this).setVisible(true));
+        helpMenu.add(shortcutsItem);
+        helpMenu.addSeparator();
+
         JMenuItem aboutItem = new JMenuItem("О программе");
         helpMenu.add(aboutItem);
         menuBar.add(helpMenu);
 
         setJMenuBar(menuBar);
-        
-        wrapItem.addActionListener(e -> {
-            wordWrapEnabled = wrapItem.isSelected();
-            setWordWrapForAll(wordWrapEnabled);
-        });
+
 
         // ---------- Статус‑бар ----------
         JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -182,11 +226,9 @@ public class Main extends JFrame {
 
         findItem.addActionListener(e -> {
             EditorPanel ep = getCurrentEditor();
-            if (ep != null) new FindReplaceDialog(this, ep.getTextArea()).setVisible(true);
+            if (ep != null)
+                new FindReplaceDialog(this, ep.getTextArea()).setVisible(true);
         });
-
-        // Автодополнение (Ctrl+Space)
-        // (это уже привязано внутри EditorPanel, но пункт в меню нам не нужен)
 
         // Вид – Перенос строк
         wrapItem.addActionListener(e -> {
@@ -201,14 +243,14 @@ public class Main extends JFrame {
         updateRecentFilesMenu();
     }
 
+    
+
     // --------------------------------------------------------------
     //  Слушатели окна
     // --------------------------------------------------------------
     private void initListeners() {
         addWindowListener(new WindowAdapter() {
-            @Override public void windowClosing(WindowEvent e) {
-                exitApplication();
-            }
+            @Override public void windowClosing(WindowEvent e) { exitApplication(); }
         });
 
         // Переключение табов → обновляем статус‑бар и подписи Undo/Redo
@@ -230,12 +272,7 @@ public class Main extends JFrame {
         updateUndoRedoMenuItems();
         statusLabel.setText("Создан новый файл");
     }
-    
-    private void goToLine() {
-        EditorPanel ep = getCurrentEditor();
-        if (ep != null) new GoToLineDialog(this, ep).setVisible(true);
-    }
-    
+
     private void openFile() {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Открыть файл");
@@ -343,7 +380,7 @@ public class Main extends JFrame {
 
     private void showAbout() {
         JOptionPane.showMessageDialog(this,
-                "HentaiIDE\nВерсия 1.0\nАвтор: niktoonion\n\nПростой редактор кода.",
+                "HentaiIDE\nВерсия 0.0.1\nАвтор: niktoonion\n\nПростой редактор кода.",
                 "О программе", JOptionPane.INFORMATION_MESSAGE);
     }
 
@@ -497,6 +534,12 @@ public class Main extends JFrame {
                 }
             }
         }.execute();
+    }
+
+    /** Открывает диалог «Перейти к строке…». */
+    private void goToLine() {
+        EditorPanel ep = getCurrentEditor();
+        if (ep != null) new GoToLineDialog(this, ep).setVisible(true);
     }
 
     // --------------------------------------------------------------
