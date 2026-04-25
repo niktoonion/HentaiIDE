@@ -25,17 +25,9 @@ import java.util.*;
 import java.util.regex.*;
 import javax.swing.*;
 import javax.swing.text.*;
-import ui.Language;
 
-/**
- * Простейшее автодополнение (Ctrl + Space).
- * Подбирает подсказки из:
- *   – зафиксированных наборов ключевых слов по текущему языку;
- *   – всех идентификаторов, найденных в текущем документе.
- */
 public final class CodeCompletion {
 
-    /** Языковые наборы ключевых слов. */
     private static final Map<Language, String[]> KEYWORDS_MAP = new EnumMap<>(Language.class);
     static {
         // C++
@@ -68,11 +60,10 @@ public final class CodeCompletion {
                 "with","yield","try","except","finally","raise","print","len","range",
                 "list","dict","set","tuple","str","int","float","bool","open","enumerate"
         });
-        // RMS (оставляем старый набор, чтобы не ломать уже существующий функционал)
+        // RMS – оставляем старый набор
         KEYWORDS_MAP.put(Language.RMS, new String[]{
                 "if","else","while","for","int","bool","string","i","b","s"
         });
-        // UNKNOWN – пустой массив
         KEYWORDS_MAP.put(Language.UNKNOWN, new String[]{});
     }
 
@@ -98,11 +89,9 @@ public final class CodeCompletion {
             // ---------- 2) Сбор вариантов ----------
             Set<String> candidates = new LinkedHashSet<>();
 
-            // 2а) Ключевые слова выбранного языка
             String[] kw = KEYWORDS_MAP.getOrDefault(lang, new String[]{});
             for (String k : kw) if (k.startsWith(prefix)) candidates.add(k);
 
-            // 2б) Идентификаторы из текущего текста
             String full = doc.getText(0, doc.getLength());
             Matcher m = Pattern.compile("\\b([a-zA-Z_][a-zA-Z0-9_]*)\\b")
                                .matcher(full);
