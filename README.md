@@ -14,7 +14,7 @@
      width="2559" height="1439">
 
 Он поддерживает синтаксис **C++, Lua, Java и Python**!  
-Написан мной на **Java 8**, и, чтобы скачать, перейдите **[сюда](https://github.com/niktoonion/HentaiIDE/releases/tag/alpha)**.
+Написан мной на **Java 21**, и, чтобы скачать, перейдите **[сюда](https://github.com/niktoonion/HentaiIDE/releases/tag/alpha)**.
 ## Лицензия
 Проект распространяется под лицензией **GNU GPL v3**.  
 Полный текст лицензии находится в файле `LICENSE`.
@@ -31,7 +31,7 @@
      width="2559" height="1439">
 
 It supports the syntax of **C++, Lua, Java and Python**!  
-Written by me in **Java 8**, and to download it go **[here](https://github.com/niktoonion/HentaiIDE/releases/tag/alpha)**.
+Written by me in **Java 21**, and to download it go **[here](https://github.com/niktoonion/HentaiIDE/releases/tag/alpha)**.
 ## License
 The project is distributed under the **GNU General Public License v3**.
 
