@@ -9,9 +9,8 @@
 
 ## **Hentai IDE – редактор кода для настоящих мужиков!**
 
-<img src="https://github.com/user-attachments/assets/0322f128-da82-41ec-bb6a-2047a729b27b"
-     alt="Скриншот Hentai IDE"
-     width="2559" height="1439">
+<img width="2559" height="1439" alt="image" src="https://github.com/user-attachments/assets/aaebf418-9e85-497e-b5b8-5d656014bdad" />
+
 
 Он поддерживает синтаксис **C++, Lua, Java и Python**!  
 Написан мной на **Java 21**, и, чтобы скачать, перейдите **[сюда](https://github.com/niktoonion/HentaiIDE/releases/tag/alpha)**.
@@ -26,9 +25,8 @@
 
 ## **Hentai IDE – a code editor for real men!**
 
-<img src="https://github.com/user-attachments/assets/0322f128-da82-41ec-bb6a-2047a729b27b"
-     alt="Hentai IDE screenshot"
-     width="2559" height="1439">
+<img width="2559" height="1439" alt="image" src="https://github.com/user-attachments/assets/670db776-cc5e-4be0-9e4e-60368a27fb02" />
+
 
 It supports the syntax of **C++, Lua, Java and Python**!  
 Written by me in **Java 21**, and to download it go **[here](https://github.com/niktoonion/HentaiIDE/releases/tag/alpha)**.
